@@ -1,0 +1,14 @@
+.git
+.gitignore
+node_modules
+.env
+.dockerignore
+Dockerfile
+*.log
+*.md
+*.test.js
+.next/cache
+coverage
+dist
+.vscode
+.github

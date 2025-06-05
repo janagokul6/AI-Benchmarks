@@ -1,0 +1,11 @@
+version: '3.8'
+
+service:
+  web:
+    container_name: ai-benchmark
+    build: .
+    ports:
+      - "5500:5500"
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
