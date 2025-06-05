@@ -50,9 +50,19 @@ jobs:
       - name: Copy nginx config if needed
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} \
-            "sudo cp /var/www/ai-benchmark/nginx-config/nginx-prod.conf /etc/nginx/sites-available/ai-benchmark && \
+            "sudo cp /var/www/ai-benchmark/nginx-conf/nginx-prod.conf /etc/nginx/sites-available/ai-benchmark && \
              sudo ln -sf /etc/nginx/sites-available/ai-benchmark /etc/nginx/sites-enabled/ && \
              sudo nginx -s reload"
+   
+              # ------------------- OPTIONAL: Apache Setup Steps (COMMENTED) -------------------
+      # - name: Copy Apache Config (using Apache instead of Nginx)
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+      #       sudo cp /var/www/ai-benchmark/apache-conf/apache-prod.conf /etc/apache2/sites-available/ai-benchmark.conf
+      #       sudo a2ensite ai-benchmark.conf
+      #       sudo systemctl reload apache2
+      #     EOF
+
 
       - name: Run deploy.sh on VPS
         run: |
