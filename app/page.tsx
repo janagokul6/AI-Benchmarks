@@ -20,6 +20,7 @@ export default function Home() {
           and respond to the same input.
         </p>
       </div>
+      <Suspense fallback={<div>Loading...</div>}>
 
       <div className="grid gap-8">
         <div className="grid gap-4">
@@ -46,6 +47,7 @@ export default function Home() {
           </Suspense>
         </Tabs>
       </div>
+      </Suspense>
     </main>
   )
 }

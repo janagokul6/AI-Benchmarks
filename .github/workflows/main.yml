@@ -1,0 +1,60 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+  pull_request:
+    branches:
+      - production
+    types:
+      - closed
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    # Only run if push to production or if PR is merged to production
+    if: github.ref == 'refs/heads/production' && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true))
+    
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+    
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the Next.js app
+        run: npm run build
+
+      - name: Upload SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Copy files to VPS via SSH
+        run: |
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:/var/www/ai-benchmark
+
+      - name: Copy nginx config if needed
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} \
+            "sudo cp /var/www/ai-benchmark/nginx-config/nginx-prod.conf /etc/nginx/sites-available/ai-benchmark && \
+             sudo ln -sf /etc/nginx/sites-available/ai-benchmark /etc/nginx/sites-enabled/ && \
+             sudo nginx -s reload"
+
+      - name: Run deploy.sh on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} \
+            "cd /var/www/ai-benchmark/ && chmod +x deploy.sh && ./deploy.sh"
